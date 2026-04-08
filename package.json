@@ -1,0 +1,27 @@
+{
+  "name": "ha-countdown-card",
+  "version": "1.0.0",
+  "description": "A countdown card for Home Assistant – track important events and dates",
+  "main": "dist/countdown-card.js",
+  "scripts": {
+    "build": "rollup -c",
+    "watch": "rollup -c --watch"
+  },
+  "keywords": [
+    "home-assistant",
+    "lovelace",
+    "countdown",
+    "events",
+    "hacs"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^16.0.0",
+    "@rollup/plugin-terser": "^0.4.4",
+    "rollup": "^4.28.0"
+  },
+  "dependencies": {
+    "lit": "^3.2.0"
+  }
+}
