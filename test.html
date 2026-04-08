@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Countdown Card – Preview</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1c1c1e;
+      color: #e0e0e0;
+      display: flex;
+      justify-content: center;
+      padding: 32px 16px;
+      min-height: 100vh;
+    }
+    .wrap { width: 100%; max-width: 480px; }
+    ha-card { display: block; border-radius: 16px; background: rgba(255,255,255,.06); padding: 4px; }
+  </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css">
+</head>
+<body>
+  <div class="wrap">
+    <countdown-card id="card"></countdown-card>
+  </div>
+
+  <script type="module">
+    /* ── ha-card stub ── */
+    if (!customElements.get('ha-card')) {
+      class HaCard extends HTMLElement {
+        constructor() {
+          super();
+          this.attachShadow({ mode: 'open' });
+          this.shadowRoot.innerHTML = '<style>:host{display:block}</style><slot></slot>';
+        }
+      }
+      customElements.define('ha-card', HaCard);
+    }
+
+    /* ── ha-icon stub (renders real MDI icons) ── */
+    if (!customElements.get('ha-icon')) {
+      class HaIcon extends HTMLElement {
+        static get observedAttributes() { return ['icon']; }
+        constructor() {
+          super();
+          this.attachShadow({ mode: 'open' });
+        }
+        connectedCallback() { this._render(); }
+        attributeChangedCallback() { this._render(); }
+        set icon(v) { this._icon = v; this._render(); }
+        get icon() { return this._icon || this.getAttribute('icon'); }
+        _render() {
+          const icon = this._icon || this.getAttribute('icon') || '';
+          const name = icon.replace('mdi:', '');
+          this.shadowRoot.innerHTML = `
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css">
+            <style>
+              :host { display: inline-flex; align-items: center; justify-content: center; width: var(--mdc-icon-size, 24px); height: var(--mdc-icon-size, 24px); }
+              i { font-size: var(--mdc-icon-size, 24px); color: inherit; line-height: 1; }
+            </style>
+            <i class="mdi mdi-${name}"></i>
+          `;
+        }
+      }
+      customElements.define('ha-icon', HaIcon);
+    }
+
+    import('./dist/countdown-card.js').then(() => {
+      document.getElementById('card').setConfig({
+        title: 'Countdowns',
+        show_past: true,
+        // show_labels: false,
+        // show_add: false,
+        date_format: 'DD/MM/YYYY',
+        row_style: 'solid',  // solid | soft | minimal
+        events: [
+          { name: 'Gym', date: '2026-04-07', icon: 'trophy', color: '#2E7D32', recurring: 'daily' },
+          { name: 'Team Meeting', date: '2026-04-09', icon: 'briefcase', color: '#EF6C00', recurring: 'weekly' },
+          { name: 'Friday Lunch', date: '2026-04-08 14:00', icon: 'food', color: '#FF5722' },
+          { name: 'Pay Rent', date: '2026-05-01', icon: 'home', color: '#6A1B9A', recurring: 'monthly' },
+          { name: 'Summer Vacation', date: '2026-08-01', icon: 'airplane', color: '#1565C0' },
+          { name: "Sarah's Birthday", date: '1990-03-15', icon: 'cake', color: '#7B1FA2', recurring: 'yearly' },
+          { name: 'Got our Dog', date: '2022-06-10', icon: 'paw', color: '#4E342E' },
+          { name: 'Bought the House', date: '2019-11-20', icon: 'home', color: '#00838F' },
+        ],
+      });
+    });
+  </script>
+</body>
+</html>

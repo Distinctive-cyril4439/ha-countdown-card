@@ -31,11 +31,14 @@ const FormMixin = (Base) => class extends Base {
     this._calM = n.getMonth();
     this._calD = n.getDate();
     this._calView = 'days';
+    this._formHour = '';
+    this._formMinute = '';
     this._emojiOpen = false;
   }
 
   _loadEventIntoForm(e) {
-    const [y, m, d] = e.date.split('-').map(Number);
+    const parts = e.date.split(' ');
+    const [y, m, d] = parts[0].split('-').map(Number);
     this._formName = e.name;
     this._formIcon = e.icon || 'calendar';
     this._formColor = e.color || PRESET_COLORS[0];
@@ -44,6 +47,14 @@ const FormMixin = (Base) => class extends Base {
     this._calY = y;
     this._calM = m - 1;
     this._calD = d;
+    if (parts[1]) {
+      const [hh, mi] = parts[1].split(':');
+      this._formHour = hh || '';
+      this._formMinute = mi || '';
+    } else {
+      this._formHour = '';
+      this._formMinute = '';
+    }
     this._calView = 'days';
     this._emojiOpen = false;
   }
@@ -52,9 +63,13 @@ const FormMixin = (Base) => class extends Base {
     if (!this._formName.trim()) return null;
     const mm = String(this._calM + 1).padStart(2, '0');
     const dd = String(this._calD).padStart(2, '0');
+    const hasTime = this._formHour !== '' && this._formMinute !== '';
+    const dateStr = hasTime
+      ? `${this._calY}-${mm}-${dd} ${String(this._formHour).padStart(2,'0')}:${String(this._formMinute).padStart(2,'0')}`
+      : `${this._calY}-${mm}-${dd}`;
     return {
       name: this._formName.trim(),
-      date: `${this._calY}-${mm}-${dd}`,
+      date: dateStr,
       icon: this._formIcon,
       color: this._formColor,
       type: this._formType,
@@ -77,7 +92,6 @@ const FormMixin = (Base) => class extends Base {
     const mx = this._dim(this._calY, this._calM);
     if (this._calD > mx) this._calD = mx;
   }
-
   _renderDayPicker(today) {
     const y = this._calY, m = this._calM;
     const days = this._dim(y, m);
@@ -132,7 +146,7 @@ const FormMixin = (Base) => class extends Base {
     const thisYear = new Date().getFullYear();
     return html`
       <div class="calh">
-        <span class="calm">${startYear + 1} – ${startYear + 14}</span>
+        <span class="calm">${startYear + 1} \u2013 ${startYear + 14}</span>
         <div class="caln">
           <button class="calb" @click=${() => { this._calY -= 12; }}>&#8249;</button>
           <button class="calb" @click=${() => { this._calY += 12; }}>&#8250;</button>
@@ -146,6 +160,7 @@ const FormMixin = (Base) => class extends Base {
       </div>
     `;
   }
+
 
   _renderFormBody(isEdit, onSave, onDelete, onClose) {
     const today = new Date();
@@ -179,6 +194,20 @@ const FormMixin = (Base) => class extends Base {
         ${this._calView === 'years' ? this._renderYearPicker()
           : this._calView === 'months' ? this._renderMonthPicker()
           : this._renderDayPicker(today)}
+      </div>
+
+      <div class="fl">Time <span style="font-weight:400;opacity:.6">(optional)</span></div>
+      <div class="time-row">
+        <input type="number" class="time-inp" min="0" max="23" placeholder="HH"
+               .value=${this._formHour}
+               @input=${(e) => { this._formHour = e.target.value; }}>
+        <span class="time-sep">:</span>
+        <input type="number" class="time-inp" min="0" max="59" placeholder="MM"
+               .value=${this._formMinute}
+               @input=${(e) => { this._formMinute = e.target.value; }}>
+        ${this._formHour !== '' ? html`
+          <button class="time-clear" @click=${() => { this._formHour = ''; this._formMinute = ''; }}>✕</button>
+        ` : ''}
       </div>
 
       <div class="fl">Pick a color</div>
@@ -277,15 +306,7 @@ const FORM_STYLES = css`
     border-radius: 12px; padding: 12px;
   }
   .calh { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-  .calh-btns { display: flex; gap: 4px; }
   .calm { font-weight: 600; font-size: .95em; text-transform: capitalize; }
-  .calm-btn {
-    background: none; border: none; cursor: pointer; padding: 4px 8px;
-    font-weight: 600; font-size: .95em; text-transform: capitalize;
-    color: var(--a, var(--primary-color, #1976D2)); font-family: inherit;
-    border-radius: 6px;
-  }
-  .calm-btn:hover { background: rgba(0,0,0,.06); }
   .caln { display: flex; gap: 8px; }
   .calb {
     background: none; border: none; font-size: 1.3em; cursor: pointer;
@@ -332,6 +353,15 @@ const FORM_STYLES = css`
   .year-cell.tod { color: var(--a, var(--primary-color, #1976D2)); font-weight: 700; }
   .year-cell.sel { background: var(--a, var(--primary-color, #1976D2)); color: #fff; font-weight: 600; }
 
+  .calh-btns { display: flex; gap: 4px; }
+  .calm-btn {
+    background: none; border: none; cursor: pointer; padding: 4px 8px;
+    font-weight: 600; font-size: .95em; text-transform: capitalize;
+    color: var(--a, var(--primary-color, #1976D2)); font-family: inherit;
+    border-radius: 6px;
+  }
+  .calm-btn:hover { background: rgba(0,0,0,.06); }
+
   /* Colors */
   .colr { display: flex; gap: 10px; flex-wrap: wrap; }
   .cdot {
@@ -359,6 +389,27 @@ const FORM_STYLES = css`
     box-shadow: 0 1px 4px rgba(0,0,0,.1); font-weight: 600;
   }
 
+  /* Time picker */
+  .time-row {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--sf, var(--secondary-background-color, #f5f5f5));
+    border-radius: 12px; padding: 8px 12px;
+  }
+  .time-inp {
+    width: 56px; border: none; background: transparent; font-size: 1.1em;
+    text-align: center; color: var(--t1, var(--primary-text-color, #333));
+    outline: none; font-family: inherit; -moz-appearance: textfield;
+  }
+  .time-inp::-webkit-outer-spin-button, .time-inp::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .time-inp::placeholder { color: var(--t2, var(--secondary-text-color, #aaa)); }
+  .time-sep { font-size: 1.2em; font-weight: 600; color: var(--t2, var(--secondary-text-color, #888)); }
+  .time-clear {
+    background: none; border: none; cursor: pointer; font-size: .85em;
+    color: var(--t2, var(--secondary-text-color, #888)); padding: 4px 8px;
+    border-radius: 6px; font-family: inherit;
+  }
+  .time-clear:hover { background: rgba(0,0,0,.06); }
+
   /* Delete */
   .delbtn {
     display: block; width: 100%; margin-top: 20px; padding: 12px;
@@ -385,12 +436,13 @@ class CountdownCard extends FormMixin(LitElement) {
       _formRecurring: { state: true },
       _calY: { state: true }, _calM: { state: true }, _calD: { state: true }, _calView: { state: true },
       _emojiOpen: { state: true },
+      _formHour: { state: true }, _formMinute: { state: true },
     };
   }
 
   constructor() {
     super();
-    this._formats = {};
+    this._formats = this._loadFormats();
     this._showForm = false;
     this._editIdx = -1;
     this._resetForm();
@@ -405,9 +457,13 @@ class CountdownCard extends FormMixin(LitElement) {
       title: 'Countdowns',
       show_past: true,
       events: [
+        { name: 'Gym', date: '2026-04-07', icon: 'trophy', color: '#2E7D32', recurring: 'daily' },
+        { name: 'Team Meeting', date: '2026-04-09', icon: 'briefcase', color: '#EF6C00', recurring: 'weekly' },
+        { name: 'Pay Rent', date: '2026-05-01', icon: 'home', color: '#6A1B9A', recurring: 'monthly' },
         { name: 'Summer Vacation', date: '2026-08-01', icon: 'airplane', color: '#1565C0' },
         { name: "Sarah's Birthday", date: '1990-03-15', icon: 'cake', color: '#7B1FA2', recurring: 'yearly' },
-        { name: 'New Year', date: '2027-01-01', icon: 'party-popper', color: '#2E7D32', recurring: 'yearly' },
+        { name: 'Got our Dog', date: '2022-06-10', icon: 'paw', color: '#4E342E' },
+        { name: 'Bought the House', date: '2019-11-20', icon: 'home', color: '#00838F' },
       ],
     };
   }
@@ -422,7 +478,7 @@ class CountdownCard extends FormMixin(LitElement) {
   connectedCallback() {
     super.connectedCallback();
     this._tick = Date.now();
-    this._timer = setInterval(() => { this._tick = Date.now(); }, 60000);
+    this._timer = setInterval(() => { this._tick = Date.now(); }, 15000);
   }
 
   disconnectedCallback() {
@@ -442,9 +498,15 @@ class CountdownCard extends FormMixin(LitElement) {
     const t0 = today.getTime();
     const showPast = this.config.show_past !== false;
 
+    const now = new Date();
+
     const proc = this._allEvents().map(evt => {
-      const [py, pm, pd] = evt.date.split('-').map(Number);
-      const orig = new Date(py, pm - 1, pd);
+      const parts = evt.date.split(' ');
+      const [py, pm, pd] = parts[0].split('-').map(Number);
+      let origH = 0, origMi = 0;
+      if (parts[1]) { const [hh, mi] = parts[1].split(':').map(Number); origH = hh || 0; origMi = mi || 0; }
+      const hasTime = !!parts[1];
+      const orig = new Date(py, pm - 1, pd, origH, origMi);
       let target = new Date(orig);
       const rec = evt.recurring === true ? 'yearly' : (evt.recurring || false);
 
@@ -472,10 +534,13 @@ class CountdownCard extends FormMixin(LitElement) {
       const md = today.getMonth() - orig.getMonth();
       if (md < 0 || (md === 0 && today.getDate() < orig.getDate())) ye--;
 
-      const diff = Math.round((target.getTime() - t0) / MS_PER_DAY);
+      const diffMs = target.getTime() - (hasTime ? now.getTime() : t0);
+      const diff = hasTime ? diffMs / MS_PER_DAY : Math.round(diffMs / MS_PER_DAY);
+      const isToday = hasTime ? (diffMs >= 0 && diffMs < MS_PER_DAY) : Math.round(diffMs / MS_PER_DAY) === 0;
       return {
         ...evt, icon: evt.icon || 'calendar', originalDate: orig, targetDate: target,
-        diff, absDiff: Math.abs(diff), isToday: diff === 0, isPast: diff < 0, yearsElapsed: ye,
+        diff, absDiff: Math.abs(diff), isToday: !hasTime && isToday, isPast: hasTime ? diffMs < 0 : diff < 0,
+        hasTime, diffMs, yearsElapsed: ye,
       };
     });
 
@@ -491,9 +556,24 @@ class CountdownCard extends FormMixin(LitElement) {
 
   // ── Helpers ─────────────────────────────────────────────────────
   _fmt(d) {
-    return d.toLocaleDateString(navigator.language, {
-      weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
-    });
+    const fmt = this.config.date_format;
+    if (!fmt) {
+      return d.toLocaleDateString(navigator.language, {
+        weekday: 'short', day: 'numeric', month: 'short', year: 'numeric',
+      });
+    }
+    // Custom format: DD/MM/YYYY, MM/DD/YYYY, YYYY-MM-DD, DD.MM.YYYY, D MMM YYYY, etc.
+    const day = d.getDate(), mon = d.getMonth() + 1, year = d.getFullYear();
+    const pad = (n) => String(n).padStart(2, '0');
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const monthsFull = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const wdays = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    return fmt
+      .replace('YYYY', year).replace('YY', String(year).slice(-2))
+      .replace('MMMM', monthsFull[mon - 1]).replace('MMM', months[mon - 1])
+      .replace('MM', pad(mon)).replace('DD', pad(day))
+      .replace('D', day).replace('M', mon)
+      .replace('ddd', wdays[d.getDay()]);
   }
 
   _color(e) {
@@ -508,6 +588,16 @@ class CountdownCard extends FormMixin(LitElement) {
 
   _evtKey(e) { return `${e.name}|${e.date}`; }
 
+  _loadFormats() {
+    try { return JSON.parse(localStorage.getItem('countdown-card-formats') || '{}'); }
+    catch { return {}; }
+  }
+
+  _saveFormats() {
+    try { localStorage.setItem('countdown-card-formats', JSON.stringify(this._formats)); }
+    catch { /* ignore */ }
+  }
+
   _getFormat(e) { return this._formats[this._evtKey(e)] || 'days'; }
 
   _cycleFormat(e, ev) {
@@ -516,6 +606,7 @@ class CountdownCard extends FormMixin(LitElement) {
     const cur = this._formats[key] || 'days';
     const idx = this._FORMATS.indexOf(cur);
     this._formats = { ...this._formats, [key]: this._FORMATS[(idx + 1) % this._FORMATS.length] };
+    this._saveFormats();
   }
 
   _detailedBreakdown(e) {
@@ -559,9 +650,17 @@ class CountdownCard extends FormMixin(LitElement) {
   }
 
   _val(e) {
-    if (e.isToday) return '🎉';
+    if (e.isToday) return '';
+    // When event has time and is <24h away, show hours/minutes
+    if (e.hasTime && e.absDiff < 1 && !e.isPast) {
+      const ms = e.diffMs;
+      const h = Math.floor(ms / 3600000);
+      const m = Math.floor((ms % 3600000) / 60000);
+      if (h > 0) return `${h}h ${m}m`;
+      return `${m}m`;
+    }
     const fmt = this._getFormat(e);
-    const d = e.absDiff;
+    const d = Math.round(e.absDiff);
     const from = e.isPast ? e.targetDate : new Date();
     const to = e.isPast ? new Date() : e.targetDate;
     switch (fmt) {
@@ -579,6 +678,7 @@ class CountdownCard extends FormMixin(LitElement) {
 
   _lbl(e) {
     if (e.isToday) return 'Today!';
+    if (e.hasTime && e.absDiff < 1 && !e.isPast) return 'left';
     const fmt = this._getFormat(e);
     const suffix = e.isPast ? 'ago' : 'left';
     switch (fmt) {
@@ -597,7 +697,7 @@ class CountdownCard extends FormMixin(LitElement) {
         return mv === 1 ? `month ${suffix}` : `months ${suffix}`;
       }
       case 'detail': return suffix;
-      default: return e.absDiff === 1 ? `day ${suffix}` : `days ${suffix}`;
+      default: { const rd = Math.round(e.absDiff); return rd === 1 ? `day ${suffix}` : `days ${suffix}`; }
     }
   }
 
@@ -667,8 +767,9 @@ class CountdownCard extends FormMixin(LitElement) {
     if (this._editIdx >= 0) evts[this._editIdx] = evt;
     else evts.push(evt);
     this.config = { ...this.config, events: evts };
-    this._persistToHA();
     this._showForm = false;
+    // Persist after dialog closes so HA reload notification doesn't cover UI
+    setTimeout(() => this._persistToHA(), 100);
   }
 
   _handleDelete() {
@@ -676,8 +777,8 @@ class CountdownCard extends FormMixin(LitElement) {
     const evts = [...(this.config.events || [])];
     evts.splice(this._editIdx, 1);
     this.config = { ...this.config, events: evts };
-    this._persistToHA();
     this._showForm = false;
+    setTimeout(() => this._persistToHA(), 100);
   }
 
   _closeForm() { this._showForm = false; }
@@ -699,20 +800,22 @@ class CountdownCard extends FormMixin(LitElement) {
             ? html`<div class="empty">No events yet — tap + to add one!</div>`
             : html`
                 ${up.length > 0 ? html`
-                  <div class="divider">Upcoming</div>
+                  ${this.config.show_labels !== false ? html`<div class="divider">Upcoming</div>` : ''}
                   ${up.map(e => this._row(e))}
                 ` : ''}
                 ${sp && past.length > 0 ? html`
-                  <div class="divider">Past</div>
+                  ${this.config.show_labels !== false ? html`<div class="divider">Past</div>` : ''}
                   ${past.map(e => this._row(e))}
                 ` : ''}
               `}
         </div>
+        ${this.config.show_add !== false ? html`
         <div class="add-wrap">
           <button class="add-btn" @click=${this._openNew}>
             <span class="add-plus">＋</span> New Countdown
           </button>
         </div>
+        ` : ''}
 
         ${this._showForm ? html`
           <div class="overlay" @click=${this._closeForm}></div>
@@ -731,24 +834,37 @@ class CountdownCard extends FormMixin(LitElement) {
 
   _row(e) {
     const c = this._color(e);
+    const rs = this.config.row_style || 'solid';
     const isMdi = e.icon && !e.icon.includes(':') && e.icon.length > 2;
+    const rowStyle = rs === 'minimal' ? '' : rs === 'soft' ? `background:${c}33` : `background:${c}`;
+    const textWhite = rs === 'solid';
     return html`
-      <div class="row ${e.isPast ? 'past' : ''} editable ${e.isToday ? 'today' : ''}"
-           style="background: ${c}CC"
+      <div class="row ${e.isPast ? 'past' : ''} editable ${e.isToday ? 'today' : ''} rs-${rs}"
+           style="${rowStyle}"
            @click=${() => this._openEdit(e)}>
-        <div class="accent" style="background:${c}"></div>
-        <div class="ico" style="color:${c}">
+        ${rs === 'minimal' ? html`<div class="accent" style="background:${c}"></div>` : ''}
+        <div class="ico" style="color:${textWhite ? 'rgba(255,255,255,.9)' : c}">
           ${isMdi ? html`<ha-icon .icon=${`mdi:${e.icon}`}></ha-icon>` : html`<ha-icon icon="mdi:calendar"></ha-icon>`}
         </div>
         <div class="det">
           <div class="nm">${e.name}</div>
-          <div class="dt">${this._fmt(e.isPast ? e.originalDate : e.targetDate)}</div>
+          <div class="dt">${this._fmt(e.originalDate)}</div>
+          ${e.recurring && e.yearsElapsed > 0 ? html`
+            <div class="dt since">${e.yearsElapsed} ${e.yearsElapsed === 1 ? 'year' : 'years'} ago</div>
+          ` : ''}
         </div>
-        <div class="cd"
-             @click=${(ev) => this._cycleFormat(e, ev)}
-             title="Tap to change format">
-          <div class="cv ${this._getFormat(e) === 'detail' ? 'detail' : ''}" style="color:${c}">${this._val(e)}</div>
-          <div class="cl">${this._lbl(e)}</div>
+        <div class="cd ${e.isToday ? 'cd-today' : ''}"
+             @click=${(ev) => { if (!e.isToday) this._cycleFormat(e, ev); }}
+             title="${e.isToday ? '' : 'Tap to change format'}">
+          ${e.isToday ? html`
+            <div class="today-ico" style="color:${textWhite ? 'rgba(255,255,255,.9)' : c}">
+              ${isMdi ? html`<ha-icon .icon=${`mdi:${e.icon}`}></ha-icon>` : html`<ha-icon icon="mdi:calendar"></ha-icon>`}
+            </div>
+            <div class="cl" style="${textWhite ? '' : `color:var(--t2)`}">today</div>
+          ` : html`
+            <div class="cv ${this._getFormat(e) === 'detail' ? 'detail' : ''}" style="${!textWhite ? `color:${c}` : ''}">${this._val(e)}</div>
+            <div class="cl">${this._lbl(e)}</div>
+          `}
         </div>
       </div>
     `;
@@ -772,39 +888,48 @@ class CountdownCard extends FormMixin(LitElement) {
         text-transform: uppercase; letter-spacing: 1px; color: var(--t2);
       }
       .row {
-        display: flex; align-items: center; padding: 12px 14px 12px 0;
+        display: flex; align-items: center; padding: 12px 14px;
         border-radius: 12px; gap: 12px; cursor: default; position: relative;
-        background: var(--sf); overflow: hidden;
+        overflow: hidden;
         transition: box-shadow .15s;
       }
       .row:hover { box-shadow: 0 2px 8px rgba(0,0,0,.08); }
       .row.editable { cursor: pointer; }
-      .row.today { background: var(--sf); }
+      .row.today { }
 
-      /* Accent bar */
+      /* Row style: minimal — accent bar */
       .accent {
         position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
         border-radius: 4px 0 0 4px;
       }
+      .row.rs-minimal { background: var(--sf); }
+      .row.rs-soft { backdrop-filter: none; }
+
+
 
       .ico {
-        margin-left: 14px; display: flex; align-items: center; justify-content: center;
+        display: flex; align-items: center; justify-content: center; flex-shrink: 0;
         --mdc-icon-size: 24px;
       }
       .det { flex: 1; min-width: 0; }
       .nm {
-        font-weight: 500; font-size: .95em; color: #fff;
+        font-weight: 500; font-size: .95em; color: var(--t1);
         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        text-shadow: 0 1px 2px rgba(0,0,0,.15);
       }
-      .dt { font-size: .78em; color: rgba(255,255,255,.8); margin-top: 2px; }
+      .row.rs-solid .nm { color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.15); }
+      .row.rs-solid .dt { color: rgba(255,255,255,.8); }
+      .row.rs-solid .cv { color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.15); }
+      .row.rs-solid .cl { color: rgba(255,255,255,.8); }
+      .dt { font-size: .78em; color: var(--t2); margin-top: 2px; }
+      .dt.since { font-style: italic; }
       .cd { text-align: right; flex-shrink: 0; min-width: 64px; cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none; padding-right: 2px; }
       .cd:active { opacity: .7; }
-      .cv { font-size: 1.8em; font-weight: 700; line-height: 1; color: #fff !important; text-shadow: 0 1px 2px rgba(0,0,0,.15); }
+      .today-ico { display: flex; align-items: center; justify-content: center; --mdc-icon-size: 32px; }
+      .cd-today { cursor: default; }
+      .cv { font-size: 1.8em; font-weight: 700; line-height: 1; }
       .cv.detail { font-size: 1.1em; letter-spacing: .5px; }
-      .cl { font-size: .7em; color: rgba(255,255,255,.8); text-transform: lowercase; margin-top: 2px; }
+      .cl { font-size: .7em; color: var(--t2); text-transform: lowercase; margin-top: 2px; }
       .row.past { opacity: 1; }
-      .ico { color: rgba(255,255,255,.9) !important; }
       .empty { padding: 32px; text-align: center; color: var(--t2); font-style: italic; }
 
       /* Add button */
@@ -857,6 +982,7 @@ class CountdownCardEditor extends FormMixin(LitElement) {
       _formRecurring: { state: true },
       _calY: { state: true }, _calM: { state: true }, _calD: { state: true }, _calView: { state: true },
       _emojiOpen: { state: true },
+      _formHour: { state: true }, _formMinute: { state: true },
     };
   }
 
@@ -867,7 +993,7 @@ class CountdownCardEditor extends FormMixin(LitElement) {
     this._resetForm();
   }
 
-  setConfig(config) { this._config = { ...config }; }
+  setConfig(config) { this._config = { ...config, events: [...(config.events || [])] }; }
   set hass(h) { this._hass = h; }
 
   _fire() {
@@ -942,6 +1068,41 @@ class CountdownCardEditor extends FormMixin(LitElement) {
           </label>
         </div>
 
+        <div class="fld row">
+          <label>Show section labels</label>
+          <label class="sw">
+            <input type="checkbox" .checked=${this._config.show_labels !== false}
+                   @change=${() => { this._config = { ...this._config, show_labels: !(this._config.show_labels !== false) }; this._fire(); }}>
+            <span class="sl"></span>
+          </label>
+        </div>
+
+        <div class="fld row">
+          <label>Show add button</label>
+          <label class="sw">
+            <input type="checkbox" .checked=${this._config.show_add !== false}
+                   @change=${() => { this._config = { ...this._config, show_add: !(this._config.show_add !== false) }; this._fire(); }}>
+            <span class="sl"></span>
+          </label>
+        </div>
+
+        <div class="fld">
+          <label>Row style</label>
+          <div class="tg tg-wrap">
+            ${['solid','soft','minimal'].map(v => html`
+              <button class="tb ${(this._config.row_style || 'solid') === v ? 'on' : ''}"
+                      @click=${() => { this._config = { ...this._config, row_style: v }; this._fire(); }}>${v[0].toUpperCase() + v.slice(1)}</button>
+            `)}
+          </div>
+        </div>
+
+        <div class="fld">
+          <label>Date format</label>
+          <input type="text" .value=${this._config.date_format || ''}
+                 placeholder="auto (e.g. DD/MM/YYYY, D MMM YYYY)"
+                 @input=${(e) => { this._config = { ...this._config, date_format: e.target.value || undefined }; this._fire(); }}>
+        </div>
+
         <div class="sec">Events (${evts.length})</div>
         <div class="evl">
           ${evts.map((ev, i) => html`
@@ -949,7 +1110,7 @@ class CountdownCardEditor extends FormMixin(LitElement) {
               <div class="ei-dot" style="background:${ev.color || PRESET_COLORS[0]}"></div>
               <div class="einf">
                 <span class="en">${ev.name}</span>
-                <span class="edt">${ev.date}${ev.recurring ? ' · Yearly' : ''}${ev.type && ev.type !== 'event' ? ` · ${ev.type}` : ''}</span>
+                <span class="edt">${ev.date}${ev.recurring ? ` · ${typeof ev.recurring === 'string' ? ev.recurring[0].toUpperCase() + ev.recurring.slice(1) : 'Yearly'}` : ''}${ev.type && ev.type !== 'event' ? ` · ${ev.type}` : ''}</span>
               </div>
               <div class="ea">
                 <button class="ib" @click=${() => this._move(i, -1)} ?disabled=${i === 0}>▲</button>
@@ -1018,7 +1179,7 @@ class CountdownCardEditor extends FormMixin(LitElement) {
         font-size: .92em; font-weight: 600; cursor: pointer; font-family: inherit;
       }
       .ab:hover { opacity: .88; }
-      .fp { margin-top: 16px; padding: 16px; background: var(--sf); border-radius: 14px; }
+      .fp { margin-top: 16px; padding: 16px; background: var(--sf); border-radius: 14px; max-height: 70vh; overflow-y: auto; }
     `];
   }
 }
